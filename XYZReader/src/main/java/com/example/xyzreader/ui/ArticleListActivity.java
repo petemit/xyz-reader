@@ -1,5 +1,6 @@
 package com.example.xyzreader.ui;
 
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,7 +9,10 @@ import android.content.IntentFilter;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.transition.Fade;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
@@ -29,8 +33,9 @@ import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
-import com.facebook.stetho.Stetho;
 
+
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,6 +54,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
+    ArticleListActivity activity;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -58,9 +64,10 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Stetho.initializeWithDefaults(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
+        activity=this;
+        supportPostponeEnterTransition();
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 
@@ -124,6 +131,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         GridLayoutManager glm =
                 new GridLayoutManager(this,columnCount);
         mRecyclerView.setLayoutManager(glm);
+        supportStartPostponedEnterTransition();
     }
 
     @Override
@@ -147,12 +155,28 @@ public class ArticleListActivity extends AppCompatActivity implements
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
+
             final ViewHolder vh = new ViewHolder(view);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    ViewGroup vg;
+                    View image=null;
+                    if (view instanceof ViewGroup) {
+                        vg=(ViewGroup) view;
+                        image=vg.findViewById(R.id.thumbnail);
+                    }
+                    Bundle bundle = ActivityOptionsCompat
+                            .makeSceneTransitionAnimation(activity,
+                                    image,
+                                    ViewCompat.getTransitionName(image)).toBundle();
                     startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+                            ItemsContract.Items.buildItemUri(
+                                    getItemId(vh.getAdapterPosition()))),bundle);
+                    ((AppCompatActivity)(activity)).getWindow().setExitTransition(new Fade());
+//                    startActivity(new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(
+//                                    getItemId(vh.getAdapterPosition()))));
                 }
             });
             return vh;
@@ -189,9 +213,10 @@ public class ArticleListActivity extends AppCompatActivity implements
                         + "<br/>" + " by "
                         + mCursor.getString(ArticleLoader.Query.AUTHOR)));
             }
-            holder.thumbnailView.setImageUrl(
-                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
+            String url=mCursor.getString(ArticleLoader.Query.THUMB_URL);
+            holder.thumbnailView.setImageUrl(url,
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
+            ViewCompat.setTransitionName(holder.thumbnailView,url);
             holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 

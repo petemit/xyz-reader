@@ -11,14 +11,17 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Fade;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.widget.ImageView;
 
@@ -56,10 +59,29 @@ public class ArticleDetailActivity extends AppCompatActivity
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
         setContentView(R.layout.activity_article_detail);
+        supportPostponeEnterTransition();
 
+
+        // TODO: 9/7/2017 app is crashing if I don't do this for some reason.
+        getWindow().setReturnTransition(null);
+        Fade fade = new Fade();
+        fade.excludeTarget(R.id.detail_activity_toolbar_image,true);
+        fade.excludeTarget(R.id.detail_activity_toolbar,true);
+        fade.excludeTarget(R.id.pager,true);
+       // getWindow().setReturnTransition(fade);
         getSupportLoaderManager().initLoader(0, null, this);
         toolbarImage=(ImageView)findViewById(R.id.detail_activity_toolbar_image);
 
+        toolbarImage.getViewTreeObserver().addOnPreDrawListener(
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        toolbarImage.getViewTreeObserver().removeOnPreDrawListener(this);
+                        supportStartPostponedEnterTransition();
+                        return true;
+                    }
+                }
+        );
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
@@ -140,6 +162,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         mCursor = cursor;
         mPagerAdapter.notifyDataSetChanged();
 
+
         // Select the start ID
         if (mStartId > 0) {
             mCursor.moveToFirst();
@@ -148,6 +171,7 @@ public class ArticleDetailActivity extends AppCompatActivity
                 if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
                     final int position = mCursor.getPosition();
                     mPager.setCurrentItem(position, false);
+
                     break;
                 }
                 mCursor.moveToNext();
@@ -155,6 +179,9 @@ public class ArticleDetailActivity extends AppCompatActivity
             mStartId = 0;
         }
     }
+
+
+
 
     @Override
     public void onLoaderReset(android.support.v4.content.Loader<Cursor> cursorLoader) {
@@ -175,16 +202,20 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
     @Override
-    public void setToolbarImage(Bitmap b) {
+    public void setToolbarImage(Bitmap b, String url) {
         if (toolbarImage!=null){
             toolbarImage.setImageBitmap(b);
-
+            if(url!=null) {
+                ViewCompat.setTransitionName(toolbarImage,url);
+            }
             ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage,"alpha",0,1);
             objectAnimator.setDuration(FADEINDURATION);
             objectAnimator.start();
 
 
         }
+
+
 
     }
 
@@ -201,7 +232,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 //                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
 //                updateUpButtonPosition();
                 Bitmap bitmap =fragment.getToolbarBitmap();
-                setToolbarImage(bitmap);
+                setToolbarImage(bitmap,null);
             }
         }
 

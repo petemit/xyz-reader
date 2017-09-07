@@ -129,17 +129,17 @@ public class ArticleDetailFragment extends Fragment implements
 //                mTopInset = insets.top;
 //            }
 //        });
-
-        mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-              //  getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-//                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
-            }
-        });
+//
+//        mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
+//        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
+//            @Override
+//            public void onScrollChanged() {
+//                mScrollY = mScrollView.getScrollY();
+//              //  getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
+////                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
+//                updateStatusBar();
+//            }
+//        });
 
 //        mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
 //        mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
@@ -250,7 +250,7 @@ public class ArticleDetailFragment extends Fragment implements
 //                                updateStatusBar();
                                 setToolbarBitmap(bitmap);
                                 if(getUserVisibleHint()){
-                                    toolbarImageSetter.setToolbarImage(getToolbarBitmap());
+                                    toolbarImageSetter.setToolbarImage(getToolbarBitmap(), imageContainer.getRequestUrl());
                                 }
                             }
                         }
@@ -318,6 +318,6 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     public interface ToolbarImageSetter{
-         void setToolbarImage(Bitmap b);
+         void setToolbarImage(Bitmap b, String s);
     }
 }
