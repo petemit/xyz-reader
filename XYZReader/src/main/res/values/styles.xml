@@ -29,6 +29,10 @@
 
     </style>
 
+    <style name="TextTitle" parent="@style/TextAppearance.AppCompat.Large">
+
+    </style>
+
     <style name="TextBody" parent="@style/TextAppearance.AppCompat.Body1">
         <item name="android:textColor">@color/text_secondary</item>
 
