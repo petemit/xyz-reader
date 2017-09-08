@@ -1,6 +1,7 @@
 <android.support.v4.widget.NestedScrollView android:id="@+id/scrollview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:transitionGroup="true"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
             <FrameLayout
@@ -63,18 +64,7 @@
                         android:textSize="@dimen/detail_body_text_size" />
 
                 </com.example.xyzreader.ui.MaxWidthLinearLayout>
-                <ImageButton
-                    android:id="@+id/share_fab"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginBottom="@dimen/fab_margin"
-                    android:layout_marginRight="@dimen/fab_margin"
 
-                    android:contentDescription="@string/action_share"
-                    android:elevation="@dimen/fab_elevation"
-                    android:src="@drawable/ic_share"
-                    android:stateListAnimator="@anim/fab_state_list_anim" />
 
             </FrameLayout>
 

@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.transition.Fade;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.SharedElementCallback;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -27,6 +28,8 @@ import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
@@ -40,6 +43,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -55,6 +60,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     ArticleListActivity activity;
+    private ProgressBar progressBar;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -63,11 +69,19 @@ public class ArticleListActivity extends AppCompatActivity implements
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        hideProgressBar();
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
         activity=this;
+        progressBar=(ProgressBar)findViewById(R.id.progress_bar);
+        hideProgressBar();
         supportPostponeEnterTransition();
+
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 
@@ -115,6 +129,21 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+
+
+    }
+
+    private void showProgressBar() {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+    private void hideProgressBar() {
+        progressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+      // hideProgressBar();
     }
 
     @Override
@@ -131,7 +160,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         GridLayoutManager glm =
                 new GridLayoutManager(this,columnCount);
         mRecyclerView.setLayoutManager(glm);
-        supportStartPostponedEnterTransition();
+   //     supportStartPostponedEnterTransition();
     }
 
     @Override
@@ -170,10 +199,11 @@ public class ArticleListActivity extends AppCompatActivity implements
                             .makeSceneTransitionAnimation(activity,
                                     image,
                                     ViewCompat.getTransitionName(image)).toBundle();
+                    showProgressBar();
                     startActivity(new Intent(Intent.ACTION_VIEW,
                             ItemsContract.Items.buildItemUri(
                                     getItemId(vh.getAdapterPosition()))),bundle);
-                    ((AppCompatActivity)(activity)).getWindow().setExitTransition(new Fade());
+
 //                    startActivity(new Intent(Intent.ACTION_VIEW,
 //                            ItemsContract.Items.buildItemUri(
 //                                    getItemId(vh.getAdapterPosition()))));
@@ -194,7 +224,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(final ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
             Date publishedDate = parsePublishedDate();
@@ -217,6 +247,17 @@ public class ArticleListActivity extends AppCompatActivity implements
             holder.thumbnailView.setImageUrl(url,
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
             ViewCompat.setTransitionName(holder.thumbnailView,url);
+
+            holder.thumbnailView.getViewTreeObserver().addOnPreDrawListener(
+                    new ViewTreeObserver.OnPreDrawListener() {
+                        @Override
+                        public boolean onPreDraw() {
+                            holder.thumbnailView.getViewTreeObserver().removeOnPreDrawListener(this);
+                            supportStartPostponedEnterTransition();
+                            return true;
+                        }
+                    }
+            );
             holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 

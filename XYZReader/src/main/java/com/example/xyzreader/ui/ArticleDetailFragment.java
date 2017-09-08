@@ -1,11 +1,9 @@
 package com.example.xyzreader.ui;
 
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 
@@ -14,11 +12,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -56,6 +55,9 @@ public class ArticleDetailFragment extends Fragment implements
     private ColorDrawable mStatusBarColorDrawable;
     private ToolbarImageSetter toolbarImageSetter;
     private Bitmap toolbarBitmap;
+    private String bitmapUri;
+    TextView bodyView;
+    String bodyText;
 
     private int mTopInset;
     private View mPhotoContainerView;
@@ -146,19 +148,28 @@ public class ArticleDetailFragment extends Fragment implements
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
-        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
-                        .setType("text/plain")
-                        .setText("Some sample text")
-                        .getIntent(), getString(R.string.action_share)));
-            }
-        });
+//        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
+//                        .setType("text/plain")
+//                        .setText("Some sample text")
+//                        .getIntent(), getString(R.string.action_share)));
+//            }
+//        });
 
         bindViews();
         updateStatusBar();
         return mRootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+            setBigText();
+        
+
     }
 
     private void updateStatusBar() {
@@ -209,10 +220,10 @@ public class ArticleDetailFragment extends Fragment implements
         TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
 
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+      //  bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
@@ -235,7 +246,11 @@ public class ArticleDetailFragment extends Fragment implements
                 bylineView.setText(mCursor.getString(ArticleLoader.Query.AUTHOR));
 
             }
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+
+            bodyText=mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />");
+            //Spanned spanned=Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />"));
+            //new loadText().execute(bigText);
+            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0,1000).replaceAll("(\r\n|\n)", "<br />")));
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -249,8 +264,10 @@ public class ArticleDetailFragment extends Fragment implements
 //                                        .setBackgroundColor(mMutedColor);
 //                                updateStatusBar();
                                 setToolbarBitmap(bitmap);
+                                setBitmapUri(imageContainer.getRequestUrl());
                                 if(getUserVisibleHint()){
-                                    toolbarImageSetter.setToolbarImage(getToolbarBitmap(), imageContainer.getRequestUrl());
+                                    toolbarImageSetter.setToolbarImage(getToolbarBitmap(), getBitmapUri());
+
                                 }
                             }
                         }
@@ -266,8 +283,20 @@ public class ArticleDetailFragment extends Fragment implements
             bylineView.setText("N/A" );
             bodyView.setText("N/A");
         }
+
+
     }
 
+
+
+
+
+    public void setBigText(){
+        if (bodyText!=null) {
+            bodyView.append(Html.fromHtml(bodyText.substring(1000, bodyText.length()).replaceAll("(\r\n|\n)", "<br />")));
+
+        }
+    }
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newInstanceForItemId(getActivity(), mItemId);
@@ -315,6 +344,14 @@ public class ArticleDetailFragment extends Fragment implements
 
     public void setToolbarBitmap(Bitmap toolbarBitmap) {
         this.toolbarBitmap = toolbarBitmap;
+    }
+
+    public String getBitmapUri() {
+        return bitmapUri;
+    }
+
+    public void setBitmapUri(String bitmapUri) {
+        this.bitmapUri = bitmapUri;
     }
 
     public interface ToolbarImageSetter{

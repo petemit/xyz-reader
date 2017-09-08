@@ -11,5 +11,6 @@
     <dimen name="toolbar_height">56dp</dimen>
     <dimen name="actionbar_height">168dp</dimen>
     <dimen name="actionbar_image_margin">58dp</dimen>
+    <dimen name="progress_bar">60dp</dimen>
 
 </resources>

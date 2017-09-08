@@ -10,14 +10,18 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v13.app.ActivityCompat;
 import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.app.SharedElementCallback;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Explode;
 import android.transition.Fade;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +32,9 @@ import android.widget.ImageView;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
@@ -48,6 +55,7 @@ public class ArticleDetailActivity extends AppCompatActivity
     private MyPagerAdapter mPagerAdapter;
     private View mUpButtonContainer;
     private View mUpButton;
+    private ArticleDetailActivity activity;
     private ImageView toolbarImage;
 
     @Override
@@ -58,30 +66,31 @@ public class ArticleDetailActivity extends AppCompatActivity
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
+        activity=this;
         setContentView(R.layout.activity_article_detail);
         supportPostponeEnterTransition();
+        setEnterSharedElementCallback(new SharedElementCallback() {
+            @Override
+            public void onSharedElementStart(List<String> sharedElementNames, List<View> sharedElements, List<View> sharedElementSnapshots) {
+                super.onSharedElementStart(sharedElementNames, sharedElements, sharedElementSnapshots);
+            }
 
+            @Override
+            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+                super.onMapSharedElements(names, sharedElements);
+            }
 
-        // TODO: 9/7/2017 app is crashing if I don't do this for some reason.
-        getWindow().setReturnTransition(null);
-        Fade fade = new Fade();
-        fade.excludeTarget(R.id.detail_activity_toolbar_image,true);
-        fade.excludeTarget(R.id.detail_activity_toolbar,true);
-        fade.excludeTarget(R.id.pager,true);
-       // getWindow().setReturnTransition(fade);
+            @Override
+            public void onRejectSharedElements(List<View> rejectedSharedElements) {
+                Log.e("taggy","" + rejectedSharedElements.size());
+                super.onRejectSharedElements(rejectedSharedElements);
+            }
+        });
+
         getSupportLoaderManager().initLoader(0, null, this);
         toolbarImage=(ImageView)findViewById(R.id.detail_activity_toolbar_image);
 
-        toolbarImage.getViewTreeObserver().addOnPreDrawListener(
-                new ViewTreeObserver.OnPreDrawListener() {
-                    @Override
-                    public boolean onPreDraw() {
-                        toolbarImage.getViewTreeObserver().removeOnPreDrawListener(this);
-                        supportStartPostponedEnterTransition();
-                        return true;
-                    }
-                }
-        );
+
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
@@ -93,6 +102,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             @Override
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
+
 //                mUpButton.animate()
 //                        .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
 //                        .setDuration(300);
@@ -107,7 +117,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                     ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage,"alpha",1,0);
                     objectAnimator.setDuration(FADEOUTDURATION);
                     objectAnimator.start();
-
 
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
@@ -148,6 +157,19 @@ public class ArticleDetailActivity extends AppCompatActivity
                 mSelectedItemId = mStartId;
             }
         }
+    }
+
+    private void scheduleStartPostponedTransition(final View toolbarImage){
+        toolbarImage.getViewTreeObserver().addOnPreDrawListener(
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        toolbarImage.getViewTreeObserver().removeOnPreDrawListener(this);
+                        supportStartPostponedEnterTransition();
+                        return true;
+                    }
+                }
+        );
     }
 
     @Override
@@ -208,6 +230,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             if(url!=null) {
                 ViewCompat.setTransitionName(toolbarImage,url);
             }
+            scheduleStartPostponedTransition(toolbarImage);
             ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage,"alpha",0,1);
             objectAnimator.setDuration(FADEINDURATION);
             objectAnimator.start();
@@ -232,7 +255,11 @@ public class ArticleDetailActivity extends AppCompatActivity
 //                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
 //                updateUpButtonPosition();
                 Bitmap bitmap =fragment.getToolbarBitmap();
-                setToolbarImage(bitmap,null);
+                if(bitmap!=null) {
+                    setToolbarImage(bitmap,fragment.getBitmapUri());
+                }
+
+
             }
         }
 
