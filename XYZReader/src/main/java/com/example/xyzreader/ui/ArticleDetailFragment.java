@@ -14,6 +14,7 @@ import java.util.GregorianCalendar;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.text.Html;
@@ -31,7 +32,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
-
 
 
 /**
@@ -70,7 +70,7 @@ public class ArticleDetailFragment extends Fragment implements
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -90,9 +90,10 @@ public class ArticleDetailFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // setUserVisibleHint(false);
-        if (getActivity() instanceof  ToolbarImageSetter){
-            toolbarImageSetter=(ToolbarImageSetter)getActivity();
+
+        // setUserVisibleHint(false);
+        if (getActivity() instanceof ToolbarImageSetter) {
+            toolbarImageSetter = (ToolbarImageSetter) getActivity();
         }
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
@@ -121,7 +122,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 //        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
 //                mRootView.findViewById(R.id.draw_insets_frame_layout);
@@ -158,18 +159,35 @@ public class ArticleDetailFragment extends Fragment implements
 //            }
 //        });
 
+
         bindViews();
+
         updateStatusBar();
         return mRootView;
+
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    private class loadText extends AsyncTask<String, Void, Void> {
 
+        @Override
+        protected Void doInBackground(String... params) {
+            //I really don't like doing this, but it's out of scope for this project to implement
+            //textview pagination.
+            //This hack makes the transition smooth without interrupting the UI.
+            //The user will experience some jankiness when scrolling, but that happened
+            //even IF I didn't put in a wait.
+            SystemClock.sleep(1000);
+            publishProgress();
+
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
             setBigText();
-        
-
+        }
     }
 
     private void updateStatusBar() {
@@ -223,7 +241,7 @@ public class ArticleDetailFragment extends Fragment implements
         bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
 
-      //  bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        //  bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
@@ -247,14 +265,16 @@ public class ArticleDetailFragment extends Fragment implements
 
             }
 
-            bodyText=mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />");
+            bodyText = mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />");
             //Spanned spanned=Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />"));
             //new loadText().execute(bigText);
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0,1000).replaceAll("(\r\n|\n)", "<br />")));
+            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0, 1000).replaceAll("(\r\n|\n)", "<br />")));
+            new loadText().execute(bodyText);
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
 //                                Palette p = Palette.generate(bitmap, 12);
@@ -265,7 +285,7 @@ public class ArticleDetailFragment extends Fragment implements
 //                                updateStatusBar();
                                 setToolbarBitmap(bitmap);
                                 setBitmapUri(imageContainer.getRequestUrl());
-                                if(getUserVisibleHint()){
+                                if (getUserVisibleHint()) {
                                     toolbarImageSetter.setToolbarImage(getToolbarBitmap(), getBitmapUri());
 
                                 }
@@ -280,7 +300,7 @@ public class ArticleDetailFragment extends Fragment implements
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
-            bylineView.setText("N/A" );
+            bylineView.setText("N/A");
             bodyView.setText("N/A");
         }
 
@@ -288,15 +308,13 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
 
-
-
-
-    public void setBigText(){
-        if (bodyText!=null) {
+    public void setBigText() {
+        if (bodyText != null) {
             bodyView.append(Html.fromHtml(bodyText.substring(1000, bodyText.length()).replaceAll("(\r\n|\n)", "<br />")));
 
         }
     }
+
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newInstanceForItemId(getActivity(), mItemId);
@@ -354,7 +372,7 @@ public class ArticleDetailFragment extends Fragment implements
         this.bitmapUri = bitmapUri;
     }
 
-    public interface ToolbarImageSetter{
-         void setToolbarImage(Bitmap b, String s);
+    public interface ToolbarImageSetter {
+        void setToolbarImage(Bitmap b, String s);
     }
 }

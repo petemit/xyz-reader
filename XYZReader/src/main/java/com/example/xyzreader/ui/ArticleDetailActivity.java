@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v13.app.ActivityCompat;
@@ -53,6 +54,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
+    private boolean isLoaded=false;
     private View mUpButtonContainer;
     private View mUpButton;
     private ArticleDetailActivity activity;
@@ -117,6 +119,7 @@ public class ArticleDetailActivity extends AppCompatActivity
                     ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage,"alpha",1,0);
                     objectAnimator.setDuration(FADEOUTDURATION);
                     objectAnimator.start();
+                    isLoaded=false;
 
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
@@ -255,8 +258,9 @@ public class ArticleDetailActivity extends AppCompatActivity
 //                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
 //                updateUpButtonPosition();
                 Bitmap bitmap =fragment.getToolbarBitmap();
-                if(bitmap!=null) {
+                if(bitmap!=null && !isLoaded) {
                     setToolbarImage(bitmap,fragment.getBitmapUri());
+                    isLoaded=true;
                 }
 
 
