@@ -4,7 +4,6 @@ package com.example.xyzreader.ui;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 
 import java.text.ParseException;
@@ -18,7 +17,6 @@ import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.text.Html;
-import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -53,11 +51,13 @@ public class ArticleDetailFragment extends Fragment implements
     private ObservableScrollView mScrollView;
     private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
     private ColorDrawable mStatusBarColorDrawable;
-    private ToolbarImageSetter toolbarImageSetter;
+    private ToolbarSetter toolbarSetter;
     private Bitmap toolbarBitmap;
     private String bitmapUri;
-    TextView bodyView;
-    String bodyText;
+    private TextView bodyView;
+    private String bodyText;
+    private String titleText;
+    private String bylineText;
 
     private int mTopInset;
     private View mPhotoContainerView;
@@ -92,8 +92,8 @@ public class ArticleDetailFragment extends Fragment implements
         super.onCreate(savedInstanceState);
 
         // setUserVisibleHint(false);
-        if (getActivity() instanceof ToolbarImageSetter) {
-            toolbarImageSetter = (ToolbarImageSetter) getActivity();
+        if (getActivity() instanceof ToolbarSetter) {
+            toolbarSetter = (ToolbarSetter) getActivity();
         }
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
@@ -149,15 +149,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
-//        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
-//                        .setType("text/plain")
-//                        .setText("Some sample text")
-//                        .getIntent(), getString(R.string.action_share)));
-//            }
-//        });
+
 
 
         bindViews();
@@ -165,6 +157,22 @@ public class ArticleDetailFragment extends Fragment implements
         updateStatusBar();
         return mRootView;
 
+    }
+
+    public String getTitleText() {
+        return titleText;
+    }
+
+    public void setTitleText(String titleText) {
+        this.titleText = titleText;
+    }
+
+    public String getBylineText() {
+        return bylineText;
+    }
+
+    public void setBylineText(String bylineText) {
+        this.bylineText = bylineText;
     }
 
     private class loadText extends AsyncTask<String, Void, Void> {
@@ -235,9 +243,9 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
-        bylineView.setMovementMethod(new LinkMovementMethod());
+//        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
+//        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
+   //     bylineView.setMovementMethod(new LinkMovementMethod());
         bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
 
@@ -247,23 +255,7 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-                bylineView.setText(Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + " by <font color='#ffffff'>"
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                                + "</font>"));
-
-            } else {
-                // If date is before 1902, just show the string
-                bylineView.setText(mCursor.getString(ArticleLoader.Query.AUTHOR));
-
-            }
+            setDateAndTitle(mCursor);
 
             bodyText = mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />");
             //Spanned spanned=Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />"));
@@ -286,7 +278,7 @@ public class ArticleDetailFragment extends Fragment implements
                                 setToolbarBitmap(bitmap);
                                 setBitmapUri(imageContainer.getRequestUrl());
                                 if (getUserVisibleHint()) {
-                                    toolbarImageSetter.setToolbarImage(getToolbarBitmap(), getBitmapUri());
+                                    toolbarSetter.setToolbar(getToolbarBitmap(), getBitmapUri(),getTitleText(),getBylineText());
 
                                 }
                             }
@@ -299,14 +291,51 @@ public class ArticleDetailFragment extends Fragment implements
                     });
         } else {
             mRootView.setVisibility(View.GONE);
-            titleView.setText("N/A");
-            bylineView.setText("N/A");
-            bodyView.setText("N/A");
+//            titleView.setText("N/A");
+//            bylineView.setText("N/A");
+//            bodyView.setText("N/A");
         }
 
 
     }
 
+    private void setDateAndTitle(Cursor cursor) {
+        setTitleText((cursor.getString(ArticleLoader.Query.TITLE)));
+        Date publishedDate = parsePublishedDate();
+        if (!publishedDate.before(START_OF_EPOCH.getTime())) {
+            setBylineText((Html.fromHtml(
+                    DateUtils.getRelativeTimeSpanString(
+                            publishedDate.getTime(),
+                            System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+                            DateUtils.FORMAT_ABBREV_ALL).toString()
+                            + " by "
+                            + cursor.getString(ArticleLoader.Query.AUTHOR)).toString()));
+
+
+        } else {
+            // If date is before 1902, just show the string
+            setBylineText((cursor.getString(ArticleLoader.Query.AUTHOR)));
+
+        }
+
+//        titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+//        Date publishedDate = parsePublishedDate();
+//        if (!publishedDate.before(START_OF_EPOCH.getTime())) {
+//            bylineView.setText(Html.fromHtml(
+//                    DateUtils.getRelativeTimeSpanString(
+//                            publishedDate.getTime(),
+//                            System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+//                            DateUtils.FORMAT_ABBREV_ALL).toString()
+//                            + " by "
+//                            + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+//
+//
+//        } else {
+//            // If date is before 1902, just show the string
+//            bylineView.setText(mCursor.getString(ArticleLoader.Query.AUTHOR));
+//
+//        }
+    }
 
     public void setBigText() {
         if (bodyText != null) {
@@ -372,7 +401,7 @@ public class ArticleDetailFragment extends Fragment implements
         this.bitmapUri = bitmapUri;
     }
 
-    public interface ToolbarImageSetter {
-        void setToolbarImage(Bitmap b, String s);
+    public interface ToolbarSetter {
+        void setToolbar(Bitmap b, String url, String title, String byline);
     }
 }

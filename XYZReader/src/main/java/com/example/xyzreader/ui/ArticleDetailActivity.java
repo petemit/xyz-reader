@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -11,9 +12,12 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v13.app.ActivityCompat;
 import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.app.SharedElementCallback;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -29,10 +33,13 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 import java.util.Map;
@@ -41,12 +48,12 @@ import java.util.Map;
  * An activity representing a single Article detail screen, letting you swipe between articles.
  */
 public class ArticleDetailActivity extends AppCompatActivity
-        implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor>, ArticleDetailFragment.ToolbarImageSetter{
+        implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor>, ArticleDetailFragment.ToolbarSetter {
 
     private Cursor mCursor;
     private long mStartId;
-    private long FADEINDURATION=500;
-    private long FADEOUTDURATION=300;
+    private long FADEINDURATION = 500;
+    private long FADEOUTDURATION = 300;
 
     private long mSelectedItemId;
     private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
@@ -54,11 +61,14 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
-    private boolean isLoaded=false;
+    private boolean isLoaded = false;
     private View mUpButtonContainer;
     private View mUpButton;
     private ArticleDetailActivity activity;
     private ImageView toolbarImage;
+    private CollapsingToolbarLayout ctoolbar;
+    private TextView titleText;
+    private TextView bylineText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +78,30 @@ public class ArticleDetailActivity extends AppCompatActivity
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
-        activity=this;
+        activity = this;
         setContentView(R.layout.activity_article_detail);
         supportPostponeEnterTransition();
+
+
+        //Do the collapsing toolbar logic
+        ctoolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_detail_toolbar);
+        ctoolbar.setContentScrim(getDrawable(R.color.theme_primary));
+        titleText=(TextView)findViewById(R.id.article_title);
+        bylineText=(TextView) findViewById(R.id.article_byline);
+        ctoolbar.setExpandedTitleTextAppearance(R.style.TextTitle);
+
+
+        findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(activity)
+                        .setType("text/plain")
+                        .setText("Some sample text")
+                        .getIntent(), getString(R.string.action_share)));
+            }
+        });
+
+
         setEnterSharedElementCallback(new SharedElementCallback() {
             @Override
             public void onSharedElementStart(List<String> sharedElementNames, List<View> sharedElements, List<View> sharedElementSnapshots) {
@@ -84,13 +115,13 @@ public class ArticleDetailActivity extends AppCompatActivity
 
             @Override
             public void onRejectSharedElements(List<View> rejectedSharedElements) {
-                Log.e("taggy","" + rejectedSharedElements.size());
+                Log.e("taggy", "" + rejectedSharedElements.size());
                 super.onRejectSharedElements(rejectedSharedElements);
             }
         });
 
         getSupportLoaderManager().initLoader(0, null, this);
-        toolbarImage=(ImageView)findViewById(R.id.detail_activity_toolbar_image);
+        toolbarImage = (ImageView) findViewById(R.id.detail_activity_toolbar_image);
 
 
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
@@ -116,17 +147,17 @@ public class ArticleDetailActivity extends AppCompatActivity
             public void onPageSelected(int position) {
                 if (mCursor != null) {
                     mCursor.moveToPosition(position);
-                    ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage,"alpha",1,0);
+                    ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage, "alpha", 1, 0);
                     objectAnimator.setDuration(FADEOUTDURATION);
                     objectAnimator.start();
-                    isLoaded=false;
+                    isLoaded = false;
 
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
-             //   updateUpButtonPosition();
+                //   updateUpButtonPosition();
             }
         });
-        Toolbar myToolbar=(Toolbar) findViewById(R.id.detail_activity_toolbar);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.detail_activity_toolbar);
         setSupportActionBar(myToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("");
@@ -162,7 +193,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         }
     }
 
-    private void scheduleStartPostponedTransition(final View toolbarImage){
+    private void scheduleStartPostponedTransition(final View toolbarImage) {
         toolbarImage.getViewTreeObserver().addOnPreDrawListener(
                 new ViewTreeObserver.OnPreDrawListener() {
                     @Override
@@ -179,7 +210,6 @@ public class ArticleDetailActivity extends AppCompatActivity
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
     }
-
 
 
     @Override
@@ -206,8 +236,6 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
 
-
-
     @Override
     public void onLoaderReset(android.support.v4.content.Loader<Cursor> cursorLoader) {
         mCursor = null;
@@ -227,20 +255,26 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
     @Override
-    public void setToolbarImage(Bitmap b, String url) {
-        if (toolbarImage!=null){
+    public void setToolbar(Bitmap b, String url, String titleText, String bylineText) {
+        if (toolbarImage != null) {
             toolbarImage.setImageBitmap(b);
-            if(url!=null) {
-                ViewCompat.setTransitionName(toolbarImage,url);
+            if (url != null) {
+                ViewCompat.setTransitionName(toolbarImage, url);
             }
             scheduleStartPostponedTransition(toolbarImage);
-            ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage,"alpha",0,1);
+            ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(toolbarImage, "alpha", 0, 1);
             objectAnimator.setDuration(FADEINDURATION);
             objectAnimator.start();
 
+            if (titleText != null) {
+                //this.titleText.setText(titleText);
+                ctoolbar.setTitle(titleText);
+            }
+            if (bylineText != null) {
+                this.bylineText.setText(bylineText);
+            }
 
         }
-
 
 
     }
@@ -257,10 +291,10 @@ public class ArticleDetailActivity extends AppCompatActivity
             if (fragment != null) {
 //                mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
 //                updateUpButtonPosition();
-                Bitmap bitmap =fragment.getToolbarBitmap();
-                if(bitmap!=null && !isLoaded) {
-                    setToolbarImage(bitmap,fragment.getBitmapUri());
-                    isLoaded=true;
+                Bitmap bitmap = fragment.getToolbarBitmap();
+                if (bitmap != null && !isLoaded) {
+                    setToolbar(bitmap, fragment.getBitmapUri(), fragment.getTitleText(), fragment.getBylineText());
+                    isLoaded = true;
                 }
 
 
