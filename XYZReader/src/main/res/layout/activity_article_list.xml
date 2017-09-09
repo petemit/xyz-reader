@@ -40,14 +40,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-
-        android:layout_width="@dimen/progress_bar"
-        android:layout_gravity="center"
-        android:elevation="10dp"
-        android:layout_height="@dimen/progress_bar" />
-
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"

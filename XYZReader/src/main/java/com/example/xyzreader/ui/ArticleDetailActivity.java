@@ -101,25 +101,6 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
         });
 
-
-        setEnterSharedElementCallback(new SharedElementCallback() {
-            @Override
-            public void onSharedElementStart(List<String> sharedElementNames, List<View> sharedElements, List<View> sharedElementSnapshots) {
-                super.onSharedElementStart(sharedElementNames, sharedElements, sharedElementSnapshots);
-            }
-
-            @Override
-            public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                super.onMapSharedElements(names, sharedElements);
-            }
-
-            @Override
-            public void onRejectSharedElements(List<View> rejectedSharedElements) {
-                Log.e("taggy", "" + rejectedSharedElements.size());
-                super.onRejectSharedElements(rejectedSharedElements);
-            }
-        });
-
         getSupportLoaderManager().initLoader(0, null, this);
         toolbarImage = (ImageView) findViewById(R.id.detail_activity_toolbar_image);
 
@@ -127,9 +108,9 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
-        mPager.setPageMargin((int) TypedValue
-                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
-        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
+//        mPager.setPageMargin((int) TypedValue
+//                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
+//        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override

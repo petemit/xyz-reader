@@ -6,16 +6,23 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -30,6 +37,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+
+import org.w3c.dom.Text;
 
 
 /**
@@ -71,6 +80,7 @@ public class ArticleDetailFragment extends Fragment implements
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
     private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
+    private RecyclerView text_rv;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -124,6 +134,7 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+        text_rv=(RecyclerView)mRootView.findViewById(R.id.text_rv);
 //        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
 //                mRootView.findViewById(R.id.draw_insets_frame_layout);
 //        mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
@@ -246,7 +257,7 @@ public class ArticleDetailFragment extends Fragment implements
 //        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
 //        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
    //     bylineView.setMovementMethod(new LinkMovementMethod());
-        bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+//        bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
 
         //  bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -257,11 +268,31 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.animate().alpha(1);
             setDateAndTitle(mCursor);
 
-            bodyText = mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />");
+            bodyText = Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")).toString();
+            ArrayList<String> bodyTextList = new ArrayList<String>();
+            int index=0;
+            int span=500;
+            int nextnum=0;
+            while (index < bodyText.length()&&nextnum >=0){
+                nextnum=bodyText.indexOf("\n\n",index);
+                if(nextnum==-1){
+                    nextnum=bodyText.length();
+                }
+                bodyTextList.add(bodyText.substring(index,Math.min(nextnum,bodyText.length())));
+                index=nextnum+1;
+
+
+            }
+            RecyclerViewTextAdapter adapter = new RecyclerViewTextAdapter(bodyTextList);
+            text_rv.setLayoutManager(new LinearLayoutManager(getContext()));
+            text_rv.setHasFixedSize(true);
+            text_rv.setAdapter(adapter);
+
+
             //Spanned spanned=Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />"));
             //new loadText().execute(bigText);
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0, 1000).replaceAll("(\r\n|\n)", "<br />")));
-            new loadText().execute(bodyText);
+          //  bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).substring(0, 1000).replaceAll("(\r\n|\n)", "<br />")));
+          //  new loadText().execute(bodyText);
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -403,5 +434,38 @@ public class ArticleDetailFragment extends Fragment implements
 
     public interface ToolbarSetter {
         void setToolbar(Bitmap b, String url, String title, String byline);
+    }
+
+
+    private class RecyclerViewTextAdapter extends RecyclerView.Adapter<TextViewHolder>{
+        ArrayList<String> data;
+
+        public RecyclerViewTextAdapter(ArrayList<String> data){
+            this.data=data;
+        }
+
+        @Override
+        public TextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View v= LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_list_item,parent,false);
+            return new TextViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(TextViewHolder holder, int position) {
+            holder.tv.setText(data.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
+    }
+
+    private class TextViewHolder extends RecyclerView.ViewHolder{
+        TextView tv;
+        public TextViewHolder(View itemView) {
+            super(itemView);
+            tv= (TextView)itemView.findViewById(R.id.rv_tv);
+        }
     }
 }
