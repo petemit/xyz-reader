@@ -8,9 +8,10 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/detail_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="@dimen/app_bar_height"
         android:background="@color/theme_primary"
         android:fitsSystemWindows="true"
+        android:layout_marginBottom="@dimen/detail_metabar_title_bottom_padding"
         android:stateListAnimator="@drawable/appbar_always_elevated">
 
         <android.support.design.widget.CollapsingToolbarLayout
@@ -30,36 +31,14 @@
                 android:id="@+id/meta_bar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="@dimen/detail_metabar_vert_padding"
+
                 android:background="@drawable/background_scrim"
                 android:orientation="vertical"
-                android:paddingBottom="@dimen/detail_metabar_vert_padding"
                 android:paddingLeft="@dimen/detail_inner_horiz_margin"
-                android:paddingRight="@dimen/detail_inner_horiz_margin"
-                android:paddingTop="@dimen/detail_metabar_vert_padding">
+                android:paddingRight="@dimen/detail_inner_horiz_margin">
 
-                <!--<TextView-->
-                    <!--android:id="@+id/article_title"-->
-                    <!--style="@style/TextTitle"-->
-                    <!--android:layout_gravity="end"-->
-                    <!--android:gravity="bottom"-->
-                    <!--tools:text="blahTitle"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:lineSpacingMultiplier="0.9"-->
-                    <!--android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"-->
-                    <!--android:textStyle="bold"-->
-                    <!--android:layout_above="@+id/article_byline"-->
-                    <!--android:layout_alignParentStart="true" />-->
+            <include layout="@layout/byline"/>
 
-                <TextView
-                    android:id="@+id/article_byline"
-                    style="@style/TextBody"
-                    tools:text="blahSubtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true" />
             </RelativeLayout>
 
 
@@ -68,7 +47,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="?actionBarSize"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                android:stateListAnimator="@drawable/appbar_always_elevated"
                 app:layout_collapseMode="pin">
 
             </android.support.v7.widget.Toolbar>
@@ -86,21 +64,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 
-    <!--<FrameLayout-->
-    <!--android:id="@+id/up_container"-->
-    <!--android:background="@android:color/transparent"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="?actionBarSize">-->
 
-    <!--<ImageButton-->
-    <!--android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"-->
-    <!--android:id="@+id/action_up"-->
-    <!--android:layout_width="56dp"-->
-    <!--android:layout_height="?actionBarSize"-->
-    <!--android:background="?selectableItemBackgroundBorderless"-->
-    <!--android:contentDescription="@string/up"-->
-    <!--android:src="@drawable/ic_arrow_back" />-->
-    <!--</FrameLayout>-->
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/share_fab"
@@ -115,17 +79,6 @@
         android:src="@drawable/ic_share"
         android:stateListAnimator="@anim/fab_state_list_anim"
         app:fabSize="normal" />
-
-    <!--<ImageButton android:id="@+id/share_fab"-->
-    <!--android:stateListAnimator="@anim/fab_state_list_anim"-->
-    <!--android:background="@drawable/add_fab_background"-->
-    <!--android:layout_gravity="bottom|top"-->
-    <!--android:layout_marginRight="@dimen/fab_margin"-->
-    <!--android:layout_marginBottom="@dimen/fab_margin"-->
-    <!---->
-    <!--android:src="@drawable/ic_share"-->
-    <!--android:elevation="@dimen/fab_elevation"-->
-    <!--android:contentDescription="@string/action_share" />-->
 
 
 </android.support.design.widget.CoordinatorLayout>

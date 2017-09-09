@@ -48,7 +48,8 @@ import java.util.Map;
  * An activity representing a single Article detail screen, letting you swipe between articles.
  */
 public class ArticleDetailActivity extends AppCompatActivity
-        implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor>, ArticleDetailFragment.ToolbarSetter {
+        implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor>,
+        ArticleDetailFragment.ToolbarSetter {
 
     private Cursor mCursor;
     private long mStartId;
@@ -86,8 +87,8 @@ public class ArticleDetailActivity extends AppCompatActivity
         //Do the collapsing toolbar logic
         ctoolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_detail_toolbar);
         ctoolbar.setContentScrim(getDrawable(R.color.theme_primary));
-        titleText=(TextView)findViewById(R.id.article_title);
-        bylineText=(TextView) findViewById(R.id.article_byline);
+        titleText = (TextView) findViewById(R.id.article_title);
+        bylineText = (TextView) findViewById(R.id.article_byline);
         ctoolbar.setExpandedTitleTextAppearance(R.style.TextTitle);
 
 
@@ -95,8 +96,8 @@ public class ArticleDetailActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(activity)
-                        .setType("text/plain")
-                        .setText("Some sample text")
+                        .setType(getString(R.string.plain_text))
+                        .setText(getString(R.string.share_text))
                         .getIntent(), getString(R.string.action_share)));
             }
         });
@@ -108,18 +109,11 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
-//        mPager.setPageMargin((int) TypedValue
-//                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
-//        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
-
-//                mUpButton.animate()
-//                        .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
-//                        .setDuration(300);
 
 
             }
@@ -143,28 +137,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("");
 
-//        mUpButtonContainer = findViewById(R.id.up_container);
-//
-//        mUpButton = findViewById(R.id.action_up);
-//        mUpButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                onSupportNavigateUp();
-//            }
-//        });
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-//                @Override
-//                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
-//                    view.onApplyWindowInsets(windowInsets);
-//                    mTopInset = windowInsets.getSystemWindowInsetTop();
-//                    mUpButtonContainer.setTranslationY(mTopInset);
-//                    updateUpButtonPosition();
-//                    return windowInsets;
-//                }
-//            });
-//        }
 
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().getData() != null) {
@@ -223,17 +195,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPagerAdapter.notifyDataSetChanged();
     }
 
-//    public void onUpButtonFloorChanged(long itemId, ArticleDetailFragment fragment) {
-//        if (itemId == mSelectedItemId) {
-//            mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-//            updateUpButtonPosition();
-//        }
-//    }
-
-    private void updateUpButtonPosition() {
-        int upButtonNormalBottom = mTopInset + mUpButton.getHeight();
-        mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
-    }
 
     @Override
     public void setToolbar(Bitmap b, String url, String titleText, String bylineText) {
@@ -274,7 +235,8 @@ public class ArticleDetailActivity extends AppCompatActivity
 //                updateUpButtonPosition();
                 Bitmap bitmap = fragment.getToolbarBitmap();
                 if (bitmap != null && !isLoaded) {
-                    setToolbar(bitmap, fragment.getBitmapUri(), fragment.getTitleText(), fragment.getBylineText());
+                    setToolbar(bitmap, fragment.getBitmapUri(),
+                            fragment.getTitleText(), fragment.getBylineText());
                     isLoaded = true;
                 }
 

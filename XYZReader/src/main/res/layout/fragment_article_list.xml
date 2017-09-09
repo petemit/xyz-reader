@@ -11,9 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="28dp"
+        android:paddingBottom="@dimen/recycler_fragment_list_bottom_padding"
         android:paddingEnd="@dimen/list_side_margin"
         android:paddingStart="@dimen/list_side_margin"
-        android:paddingTop="16dp"
+        android:paddingTop="@dimen/article_list_rv_top"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </android.support.v4.widget.SwipeRefreshLayout>

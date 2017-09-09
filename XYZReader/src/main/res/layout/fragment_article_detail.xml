@@ -1,41 +1,8 @@
-<!--<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--android:id="@+id/scrollview"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:transitionGroup="true">-->
 
-    <!--<com.example.xyzreader.ui.DrawInsetsFrameLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content">-->
-
-
-        <!--<com.example.xyzreader.ui.MaxWidthLinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:elevation="2dp"-->
-            <!--android:maxWidth="@dimen/detail_card_max_width"-->
-            <!--android:orientation="vertical">-->
 
 <android.support.v7.widget.RecyclerView android:id="@+id/text_rv"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/detail_body_top_margin"
+    android:scrollbars="vertical"
+
     xmlns:android="http://schemas.android.com/apk/res/android"></android.support.v7.widget.RecyclerView>
-            <!--<TextView-->
-            <!--android:id="@+id/article_body"-->
-            <!--style="?android:attr/textAppearanceMedium"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginLeft="@dimen/detail_inner_horiz_margin"-->
-            <!--android:layout_marginRight="@dimen/detail_inner_horiz_margin"-->
-            <!--android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"-->
-            <!--android:paddingBottom="@dimen/detail_body_bottom_margin"-->
-            <!--android:paddingTop="@dimen/detail_body_top_margin"-->
-            <!--/>-->
-
-        <!--</com.example.xyzreader.ui.MaxWidthLinearLayout>-->
-
-
-    <!--</com.example.xyzreader.ui.DrawInsetsFrameLayout>-->
-
-<!--</android.support.v4.widget.NestedScrollView>-->

@@ -1,0 +1,11 @@
+<TextView android:id="@+id/article_byline"
+    style="@style/TextBody"
+    tools:text="@string/dummy_byline"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/byline_bottom_margin"
+    android:gravity="center"
+    android:layout_gravity="center"
+    android:layout_alignParentBottom="true"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" />

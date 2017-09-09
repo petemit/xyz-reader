@@ -8,37 +8,15 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ActivityOptionsCompat;
 
-import android.support.v4.content.Loader;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
-import android.text.format.DateUtils;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+
 
 import com.example.xyzreader.R;
-import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
-import com.example.xyzreader.data.UpdaterService;
-
-
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -78,24 +56,24 @@ public class ArticleListActivity extends AppCompatActivity {
     }
 
     public void callActivityToStartIntent(long position, Bundle bundle, Cursor cursor) {
-        Uri uri=null;
-        if(position!=0){
-            uri=ItemsContract.Items.buildItemUri(position);
+        Uri uri = null;
+        if (position != 0) {
+            uri = ItemsContract.Items.buildItemUri(position);
         }
 
-
-        //if in tablet mode
-        if (screenWidth >= getResources().getInteger(R.integer.tablet_screen_width) &&
-                (currentOrientation ==
-                        getResources().getConfiguration().ORIENTATION_LANDSCAPE)){
-            getSupportFragmentManager().beginTransaction().replace(R.id.right_fragment_container,
-                    ArticleDetailFragment.newInstance(cursor.getLong(ArticleLoader.Query._ID)));
-        }
-        else{
-            startActivity(new Intent(Intent.ACTION_VIEW, uri),bundle);
+        // not needed.. looks fine
+//
+//        //if in tablet mode
+//        if (screenWidth >= getResources().getInteger(R.integer.tablet_screen_width) &&
+//                (currentOrientation ==
+//                        getResources().getConfiguration().ORIENTATION_LANDSCAPE)){
+//            getSupportFragmentManager().beginTransaction().replace(R.id.right_fragment_container,
+//                    ArticleDetailFragment.newInstance(cursor.getLong(ArticleLoader.Query._ID)));
+//        }
+        else {
+            startActivity(new Intent(Intent.ACTION_VIEW, uri), bundle);
         }
     }
-
 
 
 }

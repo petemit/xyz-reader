@@ -37,7 +37,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 /**
- * Created by Peter on 9/9/2017.
+ * List Fragment, can support multi pane layouts if desired
  */
 
 public class ArticleListFragment extends Fragment implements
@@ -175,11 +175,11 @@ public class ArticleListFragment extends Fragment implements
                                     ViewCompat.getTransitionName(image)).toBundle();
                     //I want the activity to handle this because it may just load a fragment in the
                     //right pane or it may not
-                    ((ArticleListActivity)getActivity()).callActivityToStartIntent(
-                            getItemId(vh.getAdapterPosition()),bundle,mCursor);
-//                    startActivity(new Intent(Intent.ACTION_VIEW,
-//                            ItemsContract.Items.buildItemUri(
-//                                    getItemId(vh.getAdapterPosition()))), bundle);
+//                    ((ArticleListActivity)getActivity()).callActivityToStartIntent(
+//                            getItemId(vh.getAdapterPosition()),bundle,mCursor);
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            ItemsContract.Items.buildItemUri(
+                                    getItemId(vh.getAdapterPosition()))), bundle);
                     mSwipeRefreshLayout.setRefreshing(true);
 
 //                    startActivity(new Intent(Intent.ACTION_VIEW,
@@ -196,7 +196,7 @@ public class ArticleListFragment extends Fragment implements
                 return dateFormat.parse(date);
             } catch (ParseException ex) {
                 Log.e(TAG, ex.getMessage());
-                Log.i(TAG, "passing today's date");
+                Log.i(TAG, getString(R.string.getting_today_date));
                 return new Date();
             }
         }
