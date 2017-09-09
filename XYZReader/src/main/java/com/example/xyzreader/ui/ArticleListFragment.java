@@ -6,21 +6,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.ProgressBar;
+
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
@@ -40,37 +43,28 @@ import java.util.GregorianCalendar;
 public class ArticleListFragment extends Fragment implements
         android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = ArticleListActivity.class.toString();
-    private Toolbar mToolbar;
+    private static final String TAG = ArticleListFragment.class.toString();
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
-    ArticleListActivity activity;
-    private ProgressBar progressBar;
+
+    View mRootView;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
+    @Nullable
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_article_list);
-        activity=this;
-        //  supportPostponeEnterTransition();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mRootView = inflater.inflate(R.layout.fragment_article_list, container, false);
 
 
         // final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) mRootView.findViewById(R.id.swipe_refresh_layout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -79,29 +73,31 @@ public class ArticleListFragment extends Fragment implements
         });
 
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        getSupportLoaderManager().initLoader(0, null, this);
+        mRecyclerView = (RecyclerView) mRootView.findViewById(R.id.recycler_view);
+        getActivity().getSupportLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
             refresh();
         }
+        return mRootView;
     }
 
     private void refresh() {
-        startService(new Intent(this, UpdaterService.class));
+        getActivity().startService(new Intent(getContext(), UpdaterService.class));
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
-        registerReceiver(mRefreshingReceiver,
+        getActivity().registerReceiver(mRefreshingReceiver,
                 new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
-        unregisterReceiver(mRefreshingReceiver);
+        getActivity().unregisterReceiver(mRefreshingReceiver);
+
     }
 
     private boolean mIsRefreshing = false;
@@ -117,7 +113,6 @@ public class ArticleListFragment extends Fragment implements
     };
 
 
-
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
 
@@ -126,24 +121,18 @@ public class ArticleListFragment extends Fragment implements
 
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        // hideProgressBar();
-    }
-
-    @Override
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return ArticleLoader.newAllArticlesInstance(this);
+        return ArticleLoader.newAllArticlesInstance(getContext());
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        ArticleListActivity.Adapter adapter = new ArticleListActivity.Adapter(cursor);
+        ArticleListFragment.Adapter adapter = new ArticleListFragment.Adapter(cursor);
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
         GridLayoutManager glm =
-                new GridLayoutManager(this,columnCount);
+                new GridLayoutManager(getContext(), columnCount);
         mRecyclerView.setLayoutManager(glm);
         //     supportStartPostponedEnterTransition();
     }
@@ -153,7 +142,7 @@ public class ArticleListFragment extends Fragment implements
         mRecyclerView.setAdapter(null);
     }
 
-    private class Adapter extends RecyclerView.Adapter<ArticleListActivity.ViewHolder> {
+    private class Adapter extends RecyclerView.Adapter<ArticleListFragment.ViewHolder> {
         private Cursor mCursor;
 
         public Adapter(Cursor cursor) {
@@ -167,26 +156,30 @@ public class ArticleListFragment extends Fragment implements
         }
 
         @Override
-        public ArticleListActivity.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
+        public ArticleListFragment.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = getLayoutInflater(null).inflate(R.layout.list_item_article, parent, false);
 
-            final ArticleListActivity.ViewHolder vh = new ArticleListActivity.ViewHolder(view);
+            final ArticleListFragment.ViewHolder vh = new ArticleListFragment.ViewHolder(view);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     ViewGroup vg;
-                    View image=null;
+                    View image = null;
                     if (view instanceof ViewGroup) {
-                        vg=(ViewGroup) view;
-                        image=vg.findViewById(R.id.thumbnail);
+                        vg = (ViewGroup) view;
+                        image = vg.findViewById(R.id.thumbnail);
                     }
                     Bundle bundle = ActivityOptionsCompat
-                            .makeSceneTransitionAnimation(activity,
+                            .makeSceneTransitionAnimation(getActivity(),
                                     image,
                                     ViewCompat.getTransitionName(image)).toBundle();
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(
-                                    getItemId(vh.getAdapterPosition()))),bundle);
+                    //I want the activity to handle this because it may just load a fragment in the
+                    //right pane or it may not
+                    ((ArticleListActivity)getActivity()).callActivityToStartIntent(
+                            getItemId(vh.getAdapterPosition()),bundle,mCursor);
+//                    startActivity(new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(
+//                                    getItemId(vh.getAdapterPosition()))), bundle);
                     mSwipeRefreshLayout.setRefreshing(true);
 
 //                    startActivity(new Intent(Intent.ACTION_VIEW,
@@ -209,7 +202,7 @@ public class ArticleListFragment extends Fragment implements
         }
 
         @Override
-        public void onBindViewHolder(final ArticleListActivity.ViewHolder holder, int position) {
+        public void onBindViewHolder(final ArticleListFragment.ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
             Date publishedDate = parsePublishedDate();
@@ -228,18 +221,17 @@ public class ArticleListFragment extends Fragment implements
                                 + "<br/>" + " by "
                                 + mCursor.getString(ArticleLoader.Query.AUTHOR)));
             }
-            String url=mCursor.getString(ArticleLoader.Query.THUMB_URL);
+            String url = mCursor.getString(ArticleLoader.Query.THUMB_URL);
             holder.thumbnailView.setImageUrl(url,
-                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
+                    ImageLoaderHelper.getInstance(getContext()).getImageLoader());
 
-            ViewCompat.setTransitionName(holder.thumbnailView,url);
+            ViewCompat.setTransitionName(holder.thumbnailView, url);
 
             holder.thumbnailView.getViewTreeObserver().addOnPreDrawListener(
                     new ViewTreeObserver.OnPreDrawListener() {
                         @Override
                         public boolean onPreDraw() {
                             holder.thumbnailView.getViewTreeObserver().removeOnPreDrawListener(this);
-                            supportStartPostponedEnterTransition();
                             return true;
                         }
                     }
