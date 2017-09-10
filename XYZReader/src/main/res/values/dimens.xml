@@ -22,7 +22,7 @@
     <dimen name="list_item_padding_right">16dp</dimen>
     <dimen name="list_item_padding_top">16dp</dimen>
     <dimen name="thumbnail_size">160dp</dimen>
-    <dimen name="list_item_thumbnail_land_size">150dp</dimen>
+    <dimen name="list_item_thumbnail_land_size">160dp</dimen>
     <dimen name="minimum_margin">1dp</dimen>
 
 

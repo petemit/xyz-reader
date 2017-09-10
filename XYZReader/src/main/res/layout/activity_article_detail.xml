@@ -9,8 +9,8 @@
         android:id="@+id/detail_app_bar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
-        android:background="@color/theme_primary"
         android:fitsSystemWindows="true"
+        android:background="@color/theme_primary"
         android:layout_marginBottom="@dimen/detail_metabar_title_bottom_padding"
         android:stateListAnimator="@drawable/appbar_always_elevated">
 
@@ -72,7 +72,7 @@
         android:layout_height="@dimen/fab_dimen"
         android:layout_gravity="bottom|right"
         android:layout_marginBottom="@dimen/fab_margin"
-        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_marginEnd="@dimen/fab_margin"
         app:backgroundTint="@color/theme_accent"
         android:contentDescription="@string/action_share"
         android:elevation="@dimen/fab_elevation"

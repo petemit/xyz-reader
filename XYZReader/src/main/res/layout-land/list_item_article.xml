@@ -19,9 +19,8 @@
         <com.example.xyzreader.ui.DynamicHeightNetworkImageView
             android:id="@+id/thumbnail"
             android:layout_width="@dimen/list_item_thumbnail_land_size"
-            android:layout_height="@dimen/list_item_thumbnail_land_size"
+            android:layout_height="0dp"
             android:layout_gravity="center"
-            android:transitionName="imageTransition"
             android:scaleType="centerCrop"
             android:background="@color/photo_placeholder" />
 
