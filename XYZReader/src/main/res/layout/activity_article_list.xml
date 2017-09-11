@@ -8,7 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/actionbar_height"
         android:id="@+id/list_app_bar"
-        android:background="@color/theme_primary"
         android:stateListAnimator="@drawable/appbar_always_elevated"
         android:fitsSystemWindows="true">
 
